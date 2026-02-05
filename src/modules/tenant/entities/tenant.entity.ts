@@ -1,0 +1,133 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+
+export type TenantDocument = Tenant & Document;
+
+export enum TenantStatus {
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  TRIAL = 'trial',
+  EXPIRED = 'expired',
+}
+
+export enum SubscriptionPlan {
+  FREE = 'free',
+  BASIC = 'basic',
+  PRO = 'pro',
+  ENTERPRISE = 'enterprise',
+}
+
+@Schema({ timestamps: true })
+export class Tenant {
+  @ApiProperty()
+  @Prop({ required: true, unique: true })
+  name: string;
+
+  @ApiProperty()
+  @Prop({ required: true, unique: true })
+  slug: string;
+
+  @ApiProperty()
+  @Prop({ required: true, unique: true })
+  joinCode: string;
+
+  @ApiProperty()
+  @Prop()
+  description: string;
+
+  @ApiProperty()
+  @Prop()
+  logo: string;
+
+  @ApiProperty()
+  @Prop()
+  coverImage: string;
+
+  @ApiProperty()
+  @Prop({ type: Object })
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  };
+
+  @ApiProperty()
+  @Prop()
+  phone: string;
+
+  @ApiProperty()
+  @Prop()
+  email: string;
+
+  @ApiProperty()
+  @Prop()
+  website: string;
+
+  @ApiProperty()
+  @Prop({ type: [String] })
+  socialMedia: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
+  };
+
+  @ApiProperty()
+  @Prop({ type: String, enum: TenantStatus, default: TenantStatus.ACTIVE })
+  status: TenantStatus;
+
+  @ApiProperty()
+  @Prop({ type: String, enum: SubscriptionPlan, default: SubscriptionPlan.FREE })
+  subscriptionPlan: SubscriptionPlan;
+
+  @ApiProperty()
+  @Prop()
+  subscriptionExpiresAt: Date;
+
+  @ApiProperty()
+  @Prop({ type: Object })
+  settings: {
+    allowPublicRegistration: boolean;
+    requireEmailVerification: boolean;
+    requirePhoneVerification: boolean;
+    enableDonations: boolean;
+    enableEvents: boolean;
+    enableGroups: boolean;
+    enablePrayer: boolean;
+    enableSermons: boolean;
+    enableBible: boolean;
+    timezone: string;
+    language: string;
+  };
+
+  @ApiProperty()
+  @Prop({ type: Object })
+  branding: {
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    fontFamily: string;
+  };
+
+  @ApiProperty()
+  @Prop({ default: 0 })
+  memberCount: number;
+
+  @ApiProperty()
+  @Prop()
+  createdAt: Date;
+
+  @ApiProperty()
+  @Prop()
+  updatedAt: Date;
+}
+
+export const TenantSchema = SchemaFactory.createForClass(Tenant);
+
+// Indexes
+TenantSchema.index({ slug: 1 });
+TenantSchema.index({ joinCode: 1 });
+TenantSchema.index({ status: 1 });
