@@ -3,7 +3,8 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
-import compression from 'compression';
+const compression = require('compression');
+
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
@@ -28,11 +29,7 @@ async function bootstrap() {
   // Compression
   app.use(compression());
 
-  // Global prefix
-  const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
-  app.setGlobalPrefix(apiPrefix);
-
-  // Versioning
+  // Versioning (keeps /v1 style available if you use it in controllers)
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
@@ -44,9 +41,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
@@ -59,9 +54,15 @@ async function bootstrap() {
     new TransformInterceptor(),
   );
 
-  // Swagger documentation
-  if (configService.get('ENABLE_SWAGGER') === 'true') {
-    const config = new DocumentBuilder()
+  // ✅ Global prefix BEFORE Swagger so docs show correct paths
+  const apiPrefix = configService.get('API_PREFIX') || 'api';
+  app.setGlobalPrefix(apiPrefix, {
+    exclude: ['api/docs', 'api/docs-json', 'api/docs-yaml'],
+  });
+
+  // ✅ Swagger documentation (setup AFTER global prefix)
+  if (configService.get('ENABLE_SWAGGER')) {
+    const swaggerConfig = new DocumentBuilder()
       .setTitle('ChurchHub API')
       .setDescription('Multi-tenant Church SaaS Platform API')
       .setVersion('1.0')
@@ -100,27 +101,30 @@ async function bootstrap() {
       .addTag('Worships', 'Worship songs and media')
       .build();
 
-    const document = SwaggerModule.createDocument(app, config);
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+
+    // Swagger UI at /api/docs
     SwaggerModule.setup('api/docs', app, document, {
-      swaggerOptions: {
-        persistAuthorization: true,
-      },
+      swaggerOptions: { persistAuthorization: true },
     });
   }
 
   const port = configService.get('PORT') || 3000;
   await app.listen(port);
 
+  const env = configService.get('NODE_ENV') || 'development';
+
   console.log(`
-    ╔═══════════════════════════════════════════════════════╗
-    ║                                                       ║
-    ║   ChurchHub API Server                               ║
-    ║   Version: 1.0.0                                     ║
-    ║   Environment: ${configService.get('NODE_ENV')?.padEnd(38)}║
-    ║   Port: ${String(port).padEnd(45)}║
-    ║   API Docs: http://localhost:${port}/api/docs${' '.repeat(13)}║
-    ║                                                       ║
-    ╚═══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   ChurchHub API Server                                   ║
+║   Version: 1.0.0                                         ║
+║   Environment: ${String(env).padEnd(38)}║
+║   Port: ${String(port).padEnd(45)}║
+║   API:  http://localhost:${port}/${apiPrefix}            ║
+║   Docs: http://localhost:${port}/api/docs                ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
   `);
 }
 

@@ -13,11 +13,16 @@ export class UserRepository extends BaseRepository<UserDocument> {
   }
 
   async findByEmail(email: string, tenantId: string): Promise<UserDocument | null> {
-    return this.findOne({ email, tenantId });
+    return this.userModel.findOne({
+      email: { $regex: new RegExp(`^${email}$`, 'i') },
+      tenantId
+    }).exec();
   }
 
   async findByEmailGlobal(email: string): Promise<UserDocument | null> {
-    return this.findOne({ email });
+    return this.userModel.findOne({
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    }).exec();
   }
 
   async findByTenant(tenantId: string): Promise<UserDocument[]> {

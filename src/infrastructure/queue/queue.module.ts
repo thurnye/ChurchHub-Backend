@@ -11,10 +11,9 @@ import { QueuePublishers } from './queue.publishers';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get('REDIS_URL').split('://')[1].split(':')[0],
-          port: parseInt(
-            configService.get('REDIS_URL').split(':')[2] || '6379',
-          ),
+          host: configService.get<string>('REDIS_HOST', 'localhost'),
+          port: configService.get<number>('REDIS_PORT', 6379),
+          password: configService.get<string>('REDIS_PASSWORD') || undefined,
         },
       }),
     }),

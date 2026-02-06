@@ -379,6 +379,7 @@ async function seed() {
         isPublic: true,
         maxMembers: 15,
         createdBy: leader._id,
+        type: 'youth_group'
       },
       {
         tenantId,
@@ -391,6 +392,7 @@ async function seed() {
         isPublic: true,
         maxMembers: 20,
         createdBy: clergy._id,
+        type:'bible_study'
       },
       {
         tenantId,
@@ -403,6 +405,7 @@ async function seed() {
         isPublic: true,
         maxMembers: 30,
         createdBy: churchAdmin._id,
+        type: 'prayer_group'
       },
     ]);
 
@@ -421,12 +424,14 @@ async function seed() {
         isAnonymous: false,
         status: 'active',
         prayerCount: 8,
+        description:'Please pray for my mother who is going through surgery next week. Pray for successful procedure and quick recovery.'
       },
       {
         tenantId,
         authorId: leader._id,
         title: 'Guidance for new job',
         content: "Seeking God's guidance as I consider a job change. Please pray for wisdom and clarity.",
+        description: "Seeking God's guidance as I consider a job change. Please pray for wisdom and clarity.",
         visibility: 'church',
         isAnonymous: false,
         status: 'active',
@@ -437,6 +442,7 @@ async function seed() {
         authorId: clergy._id,
         title: 'Church Growth Initiative',
         content: 'Please pray for our upcoming outreach efforts and that we can effectively share the love of Christ with our community.',
+        description: 'Please pray for our upcoming outreach efforts and that we can effectively share the love of Christ with our community.',
         visibility: 'church',
         isAnonymous: false,
         status: 'active',

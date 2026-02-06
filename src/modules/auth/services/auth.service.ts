@@ -38,9 +38,12 @@ export class AuthService {
     // Verify join code and get tenant
     const tenant = await this.tenantService.findByJoinCode(registerDto.joinCode);
 
+    // Normalize email to lowercase
+    const normalizedEmail = registerDto.email.toLowerCase().trim();
+
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(
-      registerDto.email,
+      normalizedEmail,
       tenant._id.toString(),
     );
 
@@ -58,7 +61,7 @@ export class AuthService {
     const user = await this.userRepository.create({
       firstName: registerDto.firstName,
       lastName: registerDto.lastName,
-      email: registerDto.email,
+      email: normalizedEmail,
       phone: registerDto.phone,
       password: hashedPassword,
       tenantId: tenant._id,
@@ -90,9 +93,12 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto, tenantId: string): Promise<AuthResponse> {
+  async login(loginDto: LoginDto): Promise<AuthResponse> {
+    // Normalize email
+    const normalizedEmail = loginDto.email.toLowerCase().trim();
+
     // Find user
-    const user = await this.userRepository.findByEmail(loginDto.email, tenantId);
+    const user = await this.userRepository.findByEmailGlobal(normalizedEmail);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');

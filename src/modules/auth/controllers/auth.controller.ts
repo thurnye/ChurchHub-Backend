@@ -5,6 +5,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Version
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
@@ -26,11 +27,11 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  @ApiSecurity('tenant-id')
+  // @ApiSecurity('tenant-id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
   async login(@Body() loginDto: LoginDto, @TenantId() tenantId: string) {
-    return this.authService.login(loginDto, tenantId);
+    return this.authService.login(loginDto);
   }
 
   @Public()

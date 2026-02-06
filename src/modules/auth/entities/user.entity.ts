@@ -23,7 +23,7 @@ export class User {
   lastName: string;
 
   @ApiProperty()
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   email: string;
 
   @Prop({ required: true })
