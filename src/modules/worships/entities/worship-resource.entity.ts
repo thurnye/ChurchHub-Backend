@@ -6,8 +6,11 @@ export type WorshipResourceDocument = WorshipResource & Document;
 
 export enum WorshipResourceType {
   SONG = 'song',
-  SET = 'set',
-  RESOURCE = 'resource',
+  HYMN = 'hymn',
+  SCRIPTURE = 'scripture',
+  PRAYER = 'prayer',
+  COMMUNION = 'communion',
+  OTHER = 'other',
 }
 
 @Schema({ timestamps: true, collection: 'worship_resources' })

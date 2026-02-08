@@ -1,85 +1,128 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PostRepository } from '../repositories/post.repository';
-import { CommentRepository } from '../repositories/comment.repository';
-import { CreatePostDto } from '../dtos/create-post.dto';
-import { CreateCommentDto } from '../dtos/create-comment.dto';
+import { ProgramRepository } from '../repositories/program.repository';
+import {
+  CreateCommunityProgramDto,
+  CreateVolunteerProgramDto,
+  UpdateProgramDto,
+  QueryProgramDto,
+} from '../dtos/create-program.dto';
 import { PaginationUtil } from '@common/utils';
+import { ProgramType } from '../entities/program.entity';
 
 @Injectable()
 export class CommunityService {
-  constructor(
-    private readonly postRepository: PostRepository,
-    private readonly commentRepository: CommentRepository,
-  ) {}
+  constructor(private readonly programRepository: ProgramRepository) {}
 
-  async createPost(tenantId: string, userId: string, createPostDto: CreatePostDto) {
-    return this.postRepository.create({
+  // Create a community program (matches ICommunityProgram)
+  async createCommunityProgram(tenantId: string, userId: string, dto: CreateCommunityProgramDto) {
+    return this.programRepository.create({
       tenantId,
-      authorId: userId,
-      content: createPostDto.content,
-      images: createPostDto.images || [],
-      likes: [],
-      commentsCount: 0,
-      isPinned: false,
+      createdBy: userId,
+      type: ProgramType.COMMUNITY,
+      title: dto.title,
+      category: dto.category,
+      description: dto.description,
+      image: dto.image || '',
+      contact: dto.contact,
+      skillsNeeded: [],
+      isActive: true,
     } as any);
   }
 
-  async getPosts(tenantId: string, page: number, limit: number) {
+  // Create a volunteer program (matches IVolunteerProgram)
+  async createVolunteerProgram(tenantId: string, userId: string, dto: CreateVolunteerProgramDto) {
+    return this.programRepository.create({
+      tenantId,
+      createdBy: userId,
+      type: ProgramType.VOLUNTEER,
+      title: dto.title,
+      church: dto.church,
+      description: dto.description,
+      image: dto.image || '',
+      timeCommitment: dto.timeCommitment,
+      skillsNeeded: dto.skillsNeeded,
+      coordinator: dto.coordinator,
+      category: dto.category,
+      isActive: true,
+    } as any);
+  }
+
+  // Get all programs (both community and volunteer)
+  async getPrograms(tenantId: string, query: QueryProgramDto) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
     const skip = PaginationUtil.getSkip(page, limit);
+
+    const filter: any = {};
+    if (query.type) {
+      filter.type = query.type;
+    }
+    if (query.category) {
+      filter.category = query.category;
+    }
+
+    const [data, total] = tenantId
+  ? await Promise.all([
+      this.programRepository.findByTenant(tenantId, skip, limit, filter),
+      this.programRepository.countByTenant(tenantId, filter),
+    ])
+  : await Promise.all([
+      this.programRepository.findAll(skip, limit, filter),
+      this.programRepository.countAll(filter),
+    ]);
+
+    console.log('DATA:::::', data)
+    console.log('TOTAL:::::', total)
+
+    return PaginationUtil.paginate(data, total, { page, limit });
+  }
+
+  // Get only community programs
+  async getCommunityPrograms(tenantId: string, page: number = 1, limit: number = 20) {
+    const skip = PaginationUtil.getSkip(page, limit);
+    const filter = { type: ProgramType.COMMUNITY };
+
     const [data, total] = await Promise.all([
-      this.postRepository.findByTenant(tenantId, skip, limit),
-      this.postRepository.count({ tenantId } as any),
+      this.programRepository.findByTenant(tenantId, skip, limit, filter),
+      this.programRepository.countByTenant(tenantId, filter),
     ]);
 
     return PaginationUtil.paginate(data, total, { page, limit });
   }
 
-  async likePost(postId: string, userId: string) {
-    const post = await this.postRepository.findById(postId);
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
+  // Get only volunteer programs
+  async getVolunteerPrograms(tenantId: string, page: number = 1, limit: number = 20) {
+    const skip = PaginationUtil.getSkip(page, limit);
+    const filter = { type: ProgramType.VOLUNTEER };
 
-    const likes = post.likes || [];
-    const index = likes.findIndex((id) => id.toString() === userId);
+    const [data, total] = await Promise.all([
+      this.programRepository.findByTenant(tenantId, skip, limit, filter),
+      this.programRepository.countByTenant(tenantId, filter),
+    ]);
 
-    if (index > -1) {
-      likes.splice(index, 1);
-    } else {
-      likes.push(userId as any);
-    }
-
-    return this.postRepository.update(postId, { likes } as any);
+    return PaginationUtil.paginate(data, total, { page, limit });
   }
 
-  async createComment(postId: string, userId: string, createCommentDto: CreateCommentDto) {
-    const comment = await this.commentRepository.create({
-      postId,
-      authorId: userId,
-      content: createCommentDto.content,
-    } as any);
-
-    await this.postRepository.update(postId, {
-      $inc: { commentsCount: 1 },
-    } as any);
-
-    return comment;
+  async getProgramById(tenantId: string, programId: string) {
+    const program = await this.programRepository.findById(programId);
+    if (!program || program.tenantId.toString() !== tenantId) {
+      throw new NotFoundException('Program not found');
+    }
+    return program;
   }
 
-  async getComments(postId: string) {
-    return this.commentRepository.findByPost(postId);
+  async updateProgram(tenantId: string, programId: string, dto: UpdateProgramDto) {
+    await this.getProgramById(tenantId, programId);
+    return this.programRepository.update(programId, dto as any);
   }
 
-  async deletePost(postId: string, userId: string) {
-    const post = await this.postRepository.findById(postId);
-    if (!post) {
-      throw new NotFoundException('Post not found');
-    }
+  async deleteProgram(tenantId: string, programId: string) {
+    await this.getProgramById(tenantId, programId);
+    // Soft delete
+    await this.programRepository.update(programId, { isActive: false } as any);
+  }
 
-    if (post.authorId.toString() !== userId) {
-      throw new NotFoundException('Unauthorized');
-    }
-
-    await this.postRepository.delete(postId);
+  async getCategories(tenantId: string) {
+    return this.programRepository.getCategories(tenantId);
   }
 }

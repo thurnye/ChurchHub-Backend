@@ -79,6 +79,32 @@ export class TenantService {
     return { data, total };
   }
 
+  async findPublicChurches(page: number = 1, limit: number = 20): Promise<{
+    data: TenantDocument[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
+    const skip = (page - 1) * limit;
+    const filter = {
+      status: { $in: [TenantStatus.ACTIVE, TenantStatus.TRIAL] },
+      'settings.allowPublicRegistration': true,
+    };
+
+    const [data, total] = await Promise.all([
+      this.tenantRepository.findWithPagination(filter, skip, limit),
+      this.tenantRepository.count(filter),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async findById(id: string): Promise<TenantDocument> {
     // Try cache first
     const cached = await this.cacheService.get<TenantDocument>(`tenant:${id}`);

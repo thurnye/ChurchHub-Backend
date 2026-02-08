@@ -25,6 +25,8 @@ import { PrayerModule } from '@modules/prayer/prayer.module';
 import { SermonsModule } from '@modules/sermons/sermons.module';
 import { SettingsModule } from '@modules/settings/settings.module';
 import { WorshipsModule } from '@modules/worships/worships.module';
+import { FeedModule } from '@modules/feed/feed.module';
+import { DiscoverModule } from '@modules/discover/discover.module';
 
 @Module({
   imports: [
@@ -78,6 +80,8 @@ import { WorshipsModule } from '@modules/worships/worships.module';
     SermonsModule,
     SettingsModule,
     WorshipsModule,
+    FeedModule,
+    DiscoverModule,
   ],
 })
 export class AppModule {}
