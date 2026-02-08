@@ -27,6 +27,7 @@ export class ProgramRepository extends BaseRepository<CommunityProgramDocument> 
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
+      .select('_id category title image timeCommitment description')
       .exec();
   }
 
@@ -37,6 +38,7 @@ export class ProgramRepository extends BaseRepository<CommunityProgramDocument> 
       .countDocuments({ isActive: true, ...filter })
       .exec();
   }
+  
   async findByTenant(
     tenantId: string,
     skip: number,

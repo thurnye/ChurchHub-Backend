@@ -105,9 +105,6 @@ export class CommunityService {
 
   async getProgramById(tenantId: string, programId: string) {
     const program = await this.programRepository.findById(programId);
-    if (!program || program.tenantId.toString() !== tenantId) {
-      throw new NotFoundException('Program not found');
-    }
     return program;
   }
 

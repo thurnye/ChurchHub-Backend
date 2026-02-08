@@ -27,7 +27,11 @@ async function bootstrap() {
   });
 
   // Compression
-  app.use(compression());
+  const nodeEnv = configService.get<string>('NODE_ENV') ?? 'development';
+
+  if (nodeEnv !== 'development') {
+    app.use(compression());
+  }
 
   // Versioning (keeps /v1 style available if you use it in controllers)
   app.enableVersioning({
