@@ -71,8 +71,7 @@ export class CommunityService {
       this.programRepository.countAll(filter),
     ]);
 
-    console.log('DATA:::::', data)
-    console.log('TOTAL:::::', total)
+
 
     return PaginationUtil.paginate(data, total, { page, limit });
   }

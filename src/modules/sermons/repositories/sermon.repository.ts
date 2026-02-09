@@ -28,19 +28,26 @@ export class SermonRepository {
   }
 
   async findById(tenantId: string, id: string): Promise<SermonDocument | null> {
-    return this.sermonModel.findOne({
+    const filter: FilterQuery<Sermon> = {
       _id: new Types.ObjectId(id),
-      tenantId: new Types.ObjectId(tenantId),
-    });
+    };
+
+    if (tenantId) {
+      filter.tenantId = new Types.ObjectId(tenantId);
+    }
+
+    return this.sermonModel.findOne(filter);
   }
 
   async findAll(
     tenantId: string,
     query: QuerySermonDto,
   ): Promise<{ data: SermonDocument[]; total: number }> {
-    const filter: FilterQuery<Sermon> = {
-      tenantId: new Types.ObjectId(tenantId),
-    };
+    const filter: FilterQuery<Sermon> = {};
+
+    if(tenantId){
+      filter.tenantId = new Types.ObjectId(tenantId)
+    }
 
     if (query.speaker) {
       filter.speaker = { $regex: query.speaker, $options: 'i' };
@@ -84,6 +91,7 @@ export class SermonRepository {
         .sort({ [sortField]: sortOrder })
         .skip(skip)
         .limit(limit)
+        .select('_id title speaker thumbnailUrl speaker tags  duration date')
         .exec(),
       this.sermonModel.countDocuments(filter),
     ]);
@@ -129,13 +137,15 @@ export class SermonRepository {
   }
 
   async incrementViewCount(tenantId: string, id: string): Promise<void> {
-    await this.sermonModel.updateOne(
-      {
-        _id: new Types.ObjectId(id),
-        tenantId: new Types.ObjectId(tenantId),
-      },
-      { $inc: { viewCount: 1 } },
-    );
+    const filter: FilterQuery<Sermon> = {
+      _id: new Types.ObjectId(id),
+    };
+
+    if (tenantId) {
+      filter.tenantId = new Types.ObjectId(tenantId);
+    }
+
+    await this.sermonModel.updateOne(filter, { $inc: { viewCount: 1 } });
   }
 
   async findSpeakers(tenantId: string): Promise<string[]> {

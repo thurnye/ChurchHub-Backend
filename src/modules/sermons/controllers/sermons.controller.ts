@@ -57,7 +57,25 @@ export class SermonsController {
   @Roles(Role.MEMBER, Role.LEADER, Role.CLERGY, Role.CHURCH_ADMIN)
   @ApiOperation({ summary: 'Get all sermons with filters' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Sermons retrieved successfully' })
-  async findAll(@TenantId() tenantId: string, @Query() query: QuerySermonDto) {
+  async findAll(@Query() query: QuerySermonDto) {
+    const result = await this.sermonsService.findAll('', query);
+    return {
+      success: true,
+      data: result.data,
+      meta: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit),
+      },
+    };
+  }
+
+  @Get('tenant/:id')
+  @Roles(Role.MEMBER, Role.LEADER, Role.CLERGY, Role.CHURCH_ADMIN)
+  @ApiOperation({ summary: 'Get all sermons with filters' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Sermons retrieved successfully' })
+  async findAllByTenantId(@TenantId() tenantId: string, @Query() query: QuerySermonDto) {
     const result = await this.sermonsService.findAll(tenantId, query);
     return {
       success: true,
@@ -101,10 +119,10 @@ export class SermonsController {
   @ApiParam({ name: 'id', description: 'Sermon ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Sermon retrieved successfully' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Sermon not found' })
-  async findOne(@TenantId() tenantId: string, @Param('id') id: string) {
-    const sermon = await this.sermonsService.findById(tenantId, id);
+  async findOne(@Param('id') id: string) {
+    const sermon = await this.sermonsService.findById('', id);
     // Increment view count
-    await this.sermonsService.incrementViewCount(tenantId, id);
+    await this.sermonsService.incrementViewCount('', id);
     return {
       success: true,
       data: sermon,

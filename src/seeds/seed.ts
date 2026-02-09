@@ -274,6 +274,7 @@ const events = [
 ];
 
 const sermons = [
+  // Grace Community Church (churchId: '1') - Multiple sermons for testing
   {
     churchId: '1',
     title: 'Walking in Faith',
@@ -286,8 +287,76 @@ const sermons = [
     tags: ['Faith'],
   },
   {
-    churchId: '4',
+    churchId: '1',
     title: 'The Power of Prayer',
+    speaker: 'Rev. James Thompson',
+    date: new Date('2026-01-19'),
+    duration: 38 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
+    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    tags: ['Prayer'],
+  },
+  {
+    churchId: '1',
+    title: 'Living in Community',
+    speaker: 'Mary Johnson',
+    date: new Date('2026-01-17'),
+    duration: 32 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
+    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    tags: ['Community'],
+  },
+  {
+    churchId: '1',
+    title: 'Hope for Tomorrow',
+    speaker: 'Rev. James Thompson',
+    date: new Date('2026-01-15'),
+    duration: 50 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
+    tags: ['Hope'],
+  },
+  {
+    churchId: '1',
+    title: "God's Love for All",
+    speaker: 'David Lee',
+    date: new Date('2026-01-12'),
+    duration: 28 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
+    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    tags: ['Love'],
+  },
+  {
+    churchId: '1',
+    title: 'Justice and Mercy',
+    speaker: 'Rev. James Thompson',
+    date: new Date('2026-01-10'),
+    duration: 42 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
+    tags: ['Justice'],
+  },
+  {
+    churchId: '1',
+    title: 'Finding Peace in Chaos',
+    speaker: 'Mary Johnson',
+    date: new Date('2026-01-08'),
+    duration: 35 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    tags: ['Faith', 'Hope'],
+  },
+  {
+    churchId: '1',
+    title: 'Building Strong Families',
+    speaker: 'David Lee',
+    date: new Date('2026-01-05'),
+    duration: 40 * 60,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800',
+    tags: ['Community', 'Love'],
+  },
+  // Other churches keep one sermon each
+  {
+    churchId: '4',
+    title: 'The Power of Forgiveness',
     speaker: 'Pastor John Williams',
     date: new Date('2026-01-21'),
     duration: 38 * 60,
@@ -297,7 +366,7 @@ const sermons = [
   },
   {
     churchId: '3',
-    title: 'Living in Community',
+    title: 'The Eucharist: Source and Summit',
     speaker: 'Fr. David Martinez',
     date: new Date('2026-01-20'),
     duration: 32 * 60,
@@ -307,7 +376,7 @@ const sermons = [
   },
   {
     churchId: '5',
-    title: 'Hope for Tomorrow',
+    title: 'Sabbath Rest',
     speaker: 'Pastor Samuel Anderson',
     date: new Date('2026-01-18'),
     duration: 50 * 60,
@@ -316,7 +385,7 @@ const sermons = [
   },
   {
     churchId: '2',
-    title: "God's Love for All",
+    title: 'Anglican Traditions',
     speaker: 'Fr. Michael Roberts',
     date: new Date('2026-01-14'),
     duration: 28 * 60,
@@ -326,7 +395,7 @@ const sermons = [
   },
   {
     churchId: '6',
-    title: 'Justice and Mercy',
+    title: 'Standing for Justice',
     speaker: 'Rev. Dr. Patricia Johnson',
     date: new Date('2026-01-14'),
     duration: 42 * 60,
