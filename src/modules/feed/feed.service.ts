@@ -38,7 +38,7 @@ export class FeedService {
     // Fetch posts and sermons in parallel
     const [posts, sermons] = await Promise.all([
       this.postModel
-        .find({ tenantId })
+        .find()
         .populate('authorId', 'firstName lastName avatar')
         .sort({ createdAt: -1 })
         .limit(limit)
@@ -119,7 +119,7 @@ export class FeedService {
 
     if (type === 'post') {
       const post = await this.postModel
-        .findOne({ _id: itemId, tenantId })
+        .findOne({ _id: itemId })
         .populate('authorId', 'firstName lastName avatar')
         .exec();
 
