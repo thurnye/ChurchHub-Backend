@@ -67,6 +67,10 @@ export class CommunityProgram {
   @ApiProperty({ description: 'Created by user ID' })
   @Prop({ type: Types.ObjectId })
   createdBy: Types.ObjectId;
+
+  @ApiProperty()
+    @Prop()
+    createdAt: Date;
 }
 
 export const CommunityProgramSchema = SchemaFactory.createForClass(CommunityProgram);

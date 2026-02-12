@@ -24,7 +24,7 @@ export class FeedController {
     @CurrentUser('tenantId') tenantId: string,
     @Query() paginationDto: PaginationDto,
   ) {
-    return this.feedService.getFeed(tenantId, paginationDto);
+    return this.feedService.getFeed(paginationDto);
   }
 
   @Get(':id')
