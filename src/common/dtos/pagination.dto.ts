@@ -27,4 +27,9 @@ export class PaginationDto {
   @IsOptional()
   @IsIn(['asc', 'desc'])
   order?: 'asc' | 'desc' = 'desc';
+
+  @ApiPropertyOptional({ description: 'Search query for filtering results' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

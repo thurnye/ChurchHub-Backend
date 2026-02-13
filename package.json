@@ -20,7 +20,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node -r tsconfig-paths/register src/seeds/seed.ts",
-    "seed:bible": "ts-node -r tsconfig-paths/register src/seeds/seed-bible.ts"
+    "seed:bible": "ts-node -r tsconfig-paths/register src/seeds/seed-bible.ts",
+    "seed:prod": "ts-node -r tsconfig-paths/register src/seeds/prod-seed.ts"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",

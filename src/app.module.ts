@@ -27,6 +27,7 @@ import { SettingsModule } from '@modules/settings/settings.module';
 import { WorshipsModule } from '@modules/worships/worships.module';
 import { FeedModule } from '@modules/feed/feed.module';
 import { DiscoverModule } from '@modules/discover/discover.module';
+import { DenominationModule } from '@modules/denomination/denomination.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { DiscoverModule } from '@modules/discover/discover.module';
     WorshipsModule,
     FeedModule,
     DiscoverModule,
+    DenominationModule,
   ],
 })
 export class AppModule {}

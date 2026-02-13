@@ -5,10 +5,186 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { AppModule } from '../app.module';
 import { UserRole } from '../common/types/user-role.enum';
-import { MembershipRole, MembershipStatus } from '../modules/tenant/entities/membership.entity';
+import {
+  MembershipRole,
+  MembershipStatus,
+} from '../modules/tenant/entities/membership.entity';
 import { EventCategory } from '../modules/events/entities/event.entity';
 import { GroupType } from '../modules/groups/entities/group.entity';
 import { ProgramType } from '../modules/community/entities/program.entity';
+
+// ========== DENOMINATION DATA ==========
+const denominations = [
+  {
+    name: 'Pentecostal',
+    slug: 'pentecostal',
+    description:
+      'Churches emphasizing the baptism of the Holy Spirit, spiritual gifts, and dynamic worship.',
+    beliefs: [
+      'Baptism in the Holy Spirit',
+      'Speaking in tongues',
+      'Divine healing',
+      'Biblical authority',
+    ],
+    image: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800',
+  },
+  {
+    name: 'Anglican',
+    slug: 'anglican',
+    description:
+      'Part of the worldwide Anglican Communion, blending Catholic and Reformed traditions.',
+    beliefs: [
+      'Scripture, Tradition, and Reason',
+      'Sacramental worship',
+      'Episcopal governance',
+      'Book of Common Prayer',
+    ],
+    image: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
+  },
+  {
+    name: 'Catholic',
+    slug: 'catholic',
+    description:
+      'The Roman Catholic Church, led by the Pope and rooted in ancient Christian tradition.',
+    beliefs: [
+      'Seven Sacraments',
+      'Apostolic succession',
+      'Sacred Tradition',
+      'Communion of Saints',
+    ],
+    image: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
+  },
+  {
+    name: 'Baptist',
+    slug: 'baptist',
+    description:
+      "Churches emphasizing believer's baptism, congregational governance, and soul liberty.",
+    beliefs: [
+      "Believer's baptism by immersion",
+      'Autonomy of local church',
+      'Priesthood of all believers',
+      'Separation of church and state',
+    ],
+    image: 'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
+  },
+  {
+    name: 'Adventist',
+    slug: 'adventist',
+    description:
+      "Seventh-day Adventist churches observing Saturday Sabbath and Christ's return.",
+    beliefs: [
+      'Seventh-day Sabbath',
+      'Second Coming of Christ',
+      'State of the dead',
+      'Health message',
+    ],
+    image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
+  },
+  {
+    name: 'African-initiated',
+    slug: 'african-initiated',
+    description:
+      'Churches founded within African communities, blending Christian faith with cultural context.',
+    beliefs: [
+      'Contextual theology',
+      'Community emphasis',
+      'Prophetic ministry',
+      'Social justice',
+    ],
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
+  },
+  {
+    name: 'Methodist',
+    slug: 'methodist',
+    description:
+      'Churches rooted in the Wesleyan tradition emphasizing holiness, grace, and social action.',
+    beliefs: [
+      'Prevenient grace',
+      'Sanctification',
+      'Connectional governance',
+      'Social holiness',
+    ],
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+  },
+  {
+    name: 'Presbyterian',
+    slug: 'presbyterian',
+    description:
+      'Reformed churches governed by elders, emphasizing covenant theology and biblical preaching.',
+    beliefs: [
+      'Sovereignty of God',
+      'Elder leadership',
+      'Covenant theology',
+      'Authority of Scripture',
+    ],
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
+  },
+  {
+    name: 'Orthodox',
+    slug: 'orthodox',
+    description:
+      'Eastern Orthodox churches preserving ancient liturgy, apostolic succession, and tradition.',
+    beliefs: [
+      'Holy Tradition',
+      'Divine Liturgy',
+      'Theosis',
+      'Apostolic succession',
+    ],
+    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800',
+  },
+  {
+    name: 'Evangelical',
+    slug: 'evangelical',
+    description:
+      'Churches emphasizing personal conversion, biblical authority, and evangelism.',
+    beliefs: [
+      'Born-again experience',
+      'Biblical inerrancy',
+      'Evangelism',
+      'Personal faith in Christ',
+    ],
+    image: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800',
+  },
+  {
+    name: 'Non-Denominational',
+    slug: 'non-denominational',
+    description:
+      'Independent churches not formally aligned with a larger denominational structure.',
+    beliefs: [
+      'Biblical authority',
+      'Independent governance',
+      'Contemporary worship',
+      'Local leadership autonomy',
+    ],
+    image: 'https://images.unsplash.com/photo-1520975661595-6453be3f7070?w=800',
+  },
+  {
+    name: 'Lutheran',
+    slug: 'lutheran',
+    description:
+      'Churches rooted in the teachings of Martin Luther, emphasizing justification by faith.',
+    beliefs: [
+      'Justification by faith',
+      'Law and Gospel distinction',
+      'Sacramental theology',
+      'Authority of Scripture',
+    ],
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800',
+  },
+  {
+    name: 'Others',
+    slug: 'others',
+    description:
+      'Churches or Christian communities not listed under the major denominations above.',
+    beliefs: [
+      'Varied theological traditions',
+      'Independent or emerging movements',
+      'Localized expressions of Christianity',
+      'Mixed denominational influences',
+    ],
+    image: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=800',
+  },
+];
 
 // ========== MOCK DATA FROM FRONTEND ==========
 
@@ -19,15 +195,18 @@ const churches = [
     slug: 'grace-community',
     joinCode: 'GRACE2024',
     denomination: 'Pentecostal',
-    description: 'A vibrant community of believers passionate about worship and serving our city.',
-    mission: 'To glorify God by sharing the gospel and building a community of faith.',
+    description:
+      'A vibrant community of believers passionate about worship and serving our city.',
+    mission:
+      'To glorify God by sharing the gospel and building a community of faith.',
     vision: 'A world where every person knows and loves Jesus Christ.',
     address: '123 Main Street, Downtown',
     phone: '+1 (555) 123-4567',
     email: 'info@gracecommunity.org',
     website: 'gracecommunity.org',
     logo: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800',
-    coverImage: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800',
+    coverImage:
+      'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800',
     hasLivestream: true,
     accentColor: '#8B5CF6',
     membersCount: 132,
@@ -36,23 +215,31 @@ const churches = [
       lastName: 'Thompson',
       email: 'james.thompson@gracecommunity.org',
       role: 'Senior Pastor',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
       bio: 'Rev. James Thompson has been serving as the Senior Pastor of Grace Community Church for over 10 years.',
     },
+    serviceTimes: [
+      { day: 'Sunday', time: '10:00 AM', type: 'Morning Worship' },
+      { day: 'Sunday', time: '6:00 PM', type: 'Evening Service' },
+      { day: 'Wednesday', time: '7:00 PM', type: 'Bible Study' },
+    ],
     clergy: [
       {
         firstName: 'Mary',
         lastName: 'Johnson',
         email: 'mary.johnson@gracecommunity.org',
         role: 'Associate Pastor',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
       },
       {
         firstName: 'David',
         lastName: 'Lee',
         email: 'david.lee@gracecommunity.org',
         role: 'Youth Pastor',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       },
     ],
   },
@@ -62,25 +249,35 @@ const churches = [
     slug: 'st-marys-anglican',
     joinCode: 'STMARY2024',
     denomination: 'Anglican',
-    description: 'A traditional Anglican parish with a warm, welcoming community.',
-    mission: 'To glorify God and serve our neighbors through worship, prayer, and service.',
-    vision: 'A community where faith and love are lived out in every aspect of life.',
+    description:
+      'A traditional Anglican parish with a warm, welcoming community.',
+    mission:
+      'To glorify God and serve our neighbors through worship, prayer, and service.',
+    vision:
+      'A community where faith and love are lived out in every aspect of life.',
     address: '456 Church Avenue, Midtown',
     phone: '+1 (555) 234-5678',
     email: 'contact@stmarys.org',
     website: 'stmarys.org',
     logo: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
-    coverImage: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
+    coverImage:
+      'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
     hasLivestream: false,
     accentColor: '#059669',
     membersCount: 98,
+    serviceTimes: [
+        { day: 'Sunday', time: '10:00 AM', type: 'Morning Worship' },
+        { day: 'Sunday', time: '6:00 PM', type: 'Evening Service' },
+        { day: 'Wednesday', time: '7:00 PM', type: 'Bible Study' },
+      ],
     pastor: {
       firstName: 'Michael',
       lastName: 'Roberts',
       email: 'michael.roberts@stmarys.org',
       role: 'Vicar',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-      bio: "Fr. Michael Roberts has served as Vicar for 5 years, focusing on liturgy, pastoral care, and community outreach.",
+      avatar:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      bio: 'Fr. Michael Roberts has served as Vicar for 5 years, focusing on liturgy, pastoral care, and community outreach.',
     },
     clergy: [
       {
@@ -88,7 +285,8 @@ const churches = [
         lastName: 'Smith',
         email: 'jane.smith@stmarys.org',
         role: 'Deaconess',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       },
     ],
   },
@@ -98,15 +296,24 @@ const churches = [
     slug: 'sacred-heart',
     joinCode: 'SACRED2024',
     denomination: 'Catholic',
-    description: 'A Catholic parish serving the community with faith, hope, and love.',
-    mission: 'To proclaim the gospel of Jesus Christ and to serve the needs of our community.',
-    vision: 'A community where faith and love are lived out in every aspect of life.',
+    serviceTimes: [
+        { day: 'Sunday', time: '10:00 AM', type: 'Morning Worship' },
+        { day: 'Sunday', time: '6:00 PM', type: 'Evening Service' },
+        { day: 'Wednesday', time: '7:00 PM', type: 'Bible Study' },
+      ],
+    description:
+      'A Catholic parish serving the community with faith, hope, and love.',
+    mission:
+      'To proclaim the gospel of Jesus Christ and to serve the needs of our community.',
+    vision:
+      'A community where faith and love are lived out in every aspect of life.',
     address: '789 Cathedral Lane, Westside',
     phone: '+1 (555) 345-6789',
     email: 'parish@sacredheart.org',
     website: 'sacredheart.org',
     logo: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
-    coverImage: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
+    coverImage:
+      'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
     hasLivestream: true,
     accentColor: '#DC2626',
     membersCount: 164,
@@ -115,7 +322,8 @@ const churches = [
       lastName: 'Martinez',
       email: 'david.martinez@sacredheart.org',
       role: 'Parish Priest',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       bio: 'Fr. David Martinez has served for 8 years, teaching faithfully and shepherding the parish with compassion.',
     },
     clergy: [
@@ -124,7 +332,8 @@ const churches = [
         lastName: 'Rodriguez',
         email: 'maria.rodriguez@sacredheart.org',
         role: 'Deaconess',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       },
     ],
   },
@@ -134,15 +343,24 @@ const churches = [
     slug: 'new-life-baptist',
     joinCode: 'NEWLIFE2024',
     denomination: 'Baptist',
-    description: 'Building disciples and transforming lives through the gospel.',
-    mission: 'To glorify God and serve our neighbors through worship, prayer, and service.',
-    vision: 'A community where faith and love are lived out in every aspect of life.',
+    serviceTimes: [
+        { day: 'Sunday', time: '10:00 AM', type: 'Morning Worship' },
+        { day: 'Sunday', time: '6:00 PM', type: 'Evening Service' },
+        { day: 'Wednesday', time: '7:00 PM', type: 'Bible Study' },
+      ],
+    description:
+      'Building disciples and transforming lives through the gospel.',
+    mission:
+      'To glorify God and serve our neighbors through worship, prayer, and service.',
+    vision:
+      'A community where faith and love are lived out in every aspect of life.',
     address: '321 Hope Boulevard, Eastside',
     phone: '+1 (555) 456-7890',
     email: 'welcome@newlifebaptist.org',
     website: 'newlifebaptist.org',
     logo: 'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
-    coverImage: 'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
+    coverImage:
+      'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
     hasLivestream: true,
     accentColor: '#0891B2',
     membersCount: 121,
@@ -151,7 +369,8 @@ const churches = [
       lastName: 'Williams',
       email: 'john.williams@newlifebaptist.org',
       role: 'Lead Pastor',
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400',
       bio: 'John leads preaching and discipleship, with a heart for evangelism and practical teaching.',
     },
     clergy: [
@@ -160,7 +379,8 @@ const churches = [
         lastName: 'Johnson',
         email: 'sarah.johnson@newlifebaptist.org',
         role: 'Associate Pastor',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       },
     ],
   },
@@ -169,16 +389,24 @@ const churches = [
     name: 'Seventh-day Adventist Church',
     slug: 'seventh-day-adventist',
     joinCode: 'SDA2024',
+    serviceTimes: [
+        { day: 'Sunday', time: '10:00 AM', type: 'Morning Worship' },
+        { day: 'Sunday', time: '6:00 PM', type: 'Evening Service' },
+        { day: 'Wednesday', time: '7:00 PM', type: 'Bible Study' },
+      ],
     denomination: 'Adventist',
     description: "Keeping the Sabbath holy and sharing Christ's soon return.",
-    mission: 'To glorify God and serve our neighbors through worship, prayer, and service.',
-    vision: 'A community where faith and love are lived out in every aspect of life.',
+    mission:
+      'To glorify God and serve our neighbors through worship, prayer, and service.',
+    vision:
+      'A community where faith and love are lived out in every aspect of life.',
     address: '555 Sabbath Street, Northside',
     phone: '+1 (555) 567-8901',
     email: 'info@sdachurch.org',
     website: 'sdachurch.org',
     logo: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
-    coverImage: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
+    coverImage:
+      'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
     hasLivestream: true,
     accentColor: '#7C3AED',
     membersCount: 109,
@@ -187,7 +415,8 @@ const churches = [
       lastName: 'Anderson',
       email: 'samuel.anderson@sdachurch.org',
       role: 'Senior Pastor',
-      avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400',
       bio: 'Samuel shepherds the church with a focus on Sabbath teaching, health ministry, and spiritual growth.',
     },
     clergy: [
@@ -196,7 +425,8 @@ const churches = [
         lastName: 'Brown',
         email: 'linda.brown@sdachurch.org',
         role: 'Associate Pastor',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       },
     ],
   },
@@ -206,15 +436,24 @@ const churches = [
     slug: 'zion-ame',
     joinCode: 'ZION2024',
     denomination: 'African-initiated',
-    description: 'An historic African-American church rooted in faith and community.',
-    mission: 'To glorify God and serve our neighbors through worship, prayer, and service.',
-    vision: 'A community where faith and love are lived out in every aspect of life.',
+    serviceTimes: [
+        { day: 'Sunday', time: '10:00 AM', type: 'Morning Worship' },
+        { day: 'Sunday', time: '6:00 PM', type: 'Evening Service' },
+        { day: 'Wednesday', time: '7:00 PM', type: 'Bible Study' },
+      ],
+    description:
+      'An historic African-American church rooted in faith and community.',
+    mission:
+      'To glorify God and serve our neighbors through worship, prayer, and service.',
+    vision:
+      'A community where faith and love are lived out in every aspect of life.',
     address: '888 Freedom Way, Southside',
     phone: '+1 (555) 678-9012',
     email: 'contact@zionAME.org',
     website: 'zionAME.org',
     logo: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
-    coverImage: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
+    coverImage:
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
     hasLivestream: true,
     accentColor: '#F59E0B',
     membersCount: 143,
@@ -223,7 +462,8 @@ const churches = [
       lastName: 'Johnson',
       email: 'patricia.johnson@zionAME.org',
       role: 'Presiding Elder',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400',
+      avatar:
+        'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400',
       bio: 'Patricia leads with a passion for worship, justice, and community transformation through faith.',
     },
     clergy: [
@@ -232,7 +472,8 @@ const churches = [
         lastName: 'Davis',
         email: 'mary.davis@zionAME.org',
         role: 'Associate Pastor',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+        avatar:
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
       },
     ],
   },
@@ -242,7 +483,8 @@ const events = [
   {
     churchId: '1',
     title: 'Youth Revival Night',
-    description: 'A special night of worship and teaching for youth and young adults.',
+    description:
+      'A special night of worship and teaching for youth and young adults.',
     date: new Date('2026-01-25T19:00:00'),
     image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800',
     category: EventCategory.YOUTH,
@@ -250,7 +492,8 @@ const events = [
   {
     churchId: '3',
     title: 'Community Food Drive',
-    description: 'Join us in serving our community by collecting and distributing food.',
+    description:
+      'Join us in serving our community by collecting and distributing food.',
     date: new Date('2026-01-27T10:00:00'),
     image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800',
     category: EventCategory.OUTREACH,
@@ -266,7 +509,8 @@ const events = [
   {
     churchId: '4',
     title: 'Marriage Enrichment Workshop',
-    description: 'A day-long workshop for couples to strengthen their marriages.',
+    description:
+      'A day-long workshop for couples to strengthen their marriages.',
     date: new Date('2026-02-01T09:00:00'),
     image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800',
     category: EventCategory.OTHER,
@@ -281,8 +525,10 @@ const sermons = [
     speaker: 'Rev. James Thompson',
     date: new Date('2026-01-21'),
     duration: 45 * 60, // 45 min in seconds
-    thumbnailUrl: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     isLive: true,
     tags: ['Faith'],
   },
@@ -292,8 +538,10 @@ const sermons = [
     speaker: 'Rev. James Thompson',
     date: new Date('2026-01-19'),
     duration: 38 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     tags: ['Prayer'],
   },
   {
@@ -302,8 +550,10 @@ const sermons = [
     speaker: 'Mary Johnson',
     date: new Date('2026-01-17'),
     duration: 32 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     tags: ['Community'],
   },
   {
@@ -312,7 +562,8 @@ const sermons = [
     speaker: 'Rev. James Thompson',
     date: new Date('2026-01-15'),
     duration: 50 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
     tags: ['Hope'],
   },
   {
@@ -321,8 +572,10 @@ const sermons = [
     speaker: 'David Lee',
     date: new Date('2026-01-12'),
     duration: 28 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     tags: ['Love'],
   },
   {
@@ -331,7 +584,8 @@ const sermons = [
     speaker: 'Rev. James Thompson',
     date: new Date('2026-01-10'),
     duration: 42 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
     tags: ['Justice'],
   },
   {
@@ -340,8 +594,10 @@ const sermons = [
     speaker: 'Mary Johnson',
     date: new Date('2026-01-08'),
     duration: 35 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     tags: ['Faith', 'Hope'],
   },
   {
@@ -350,7 +606,8 @@ const sermons = [
     speaker: 'David Lee',
     date: new Date('2026-01-05'),
     duration: 40 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800',
     tags: ['Community', 'Love'],
   },
   // Other churches keep one sermon each
@@ -360,8 +617,10 @@ const sermons = [
     speaker: 'Pastor John Williams',
     date: new Date('2026-01-21'),
     duration: 38 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1502014822147-1aedfb0676e0?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     tags: ['Prayer'],
   },
   {
@@ -370,8 +629,10 @@ const sermons = [
     speaker: 'Fr. David Martinez',
     date: new Date('2026-01-20'),
     duration: 32 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     tags: ['Community'],
   },
   {
@@ -380,7 +641,8 @@ const sermons = [
     speaker: 'Pastor Samuel Anderson',
     date: new Date('2026-01-18'),
     duration: 50 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=800',
     tags: ['Hope'],
   },
   {
@@ -389,8 +651,10 @@ const sermons = [
     speaker: 'Fr. Michael Roberts',
     date: new Date('2026-01-14'),
     duration: 28 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
-    mediaUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=800',
+    mediaUrl:
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     tags: ['Love'],
   },
   {
@@ -399,7 +663,8 @@ const sermons = [
     speaker: 'Rev. Dr. Patricia Johnson',
     date: new Date('2026-01-14'),
     duration: 42 * 60,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
     tags: ['Justice'],
   },
 ];
@@ -410,20 +675,29 @@ const individualUsers = [
     firstName: 'Daniel',
     lastName: 'Okafor',
     email: 'daniel.okafor@example.com',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
+    avatar:
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
     bio: 'Learning, building, and sharing faith-filled moments.',
     posts: [
       {
-        content: '"Peace I leave with you; my peace I give you." A reminder to breathe, pray, and trust the process.',
-        images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'],
+        content:
+          '"Peace I leave with you; my peace I give you." A reminder to breathe, pray, and trust the process.',
+        images: [
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+        ],
       },
       {
-        content: 'Sunday reflections. Grateful for community, worship, and a fresh week.',
-        images: ['https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800'],
+        content:
+          'Sunday reflections. Grateful for community, worship, and a fresh week.',
+        images: [
+          'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800',
+        ],
       },
       {
         content: 'Grateful for church family and community.',
-        images: ['https://images.unsplash.com/photo-1520975661595-6453be3f7070?w=1200'],
+        images: [
+          'https://images.unsplash.com/photo-1520975661595-6453be3f7070?w=1200',
+        ],
       },
     ],
   },
@@ -436,16 +710,23 @@ const individualUsers = [
     bio: 'Faith, service, and small acts of kindness.',
     posts: [
       {
-        content: 'A short prayer for your week. If you\'re overwhelmed, pause—God is with you.',
-        images: ['https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=800'],
+        content:
+          "A short prayer for your week. If you're overwhelmed, pause—God is with you.",
+        images: [
+          'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=800',
+        ],
       },
       {
         content: 'Community day. Serving together is worship too.',
-        images: ['https://images.unsplash.com/photo-1520975958225-1a1fbd7f6d10?w=800'],
+        images: [
+          'https://images.unsplash.com/photo-1520975958225-1a1fbd7f6d10?w=800',
+        ],
       },
       {
         content: "Today's devotional hit differently.",
-        images: ['https://images.unsplash.com/photo-1520974735194-6f64a33d6b49?w=1200'],
+        images: [
+          'https://images.unsplash.com/photo-1520974735194-6f64a33d6b49?w=1200',
+        ],
       },
     ],
   },
@@ -455,32 +736,44 @@ const churchPosts = [
   {
     churchId: '1',
     content: 'Choir rehearsal moments — praise night warmup.',
-    images: ['https://images.unsplash.com/photo-1542395975-1913c290082f?w=1200'],
+    images: [
+      'https://images.unsplash.com/photo-1542395975-1913c290082f?w=1200',
+    ],
   },
   {
     churchId: '2',
     content: 'Choir rehearsal moments — praise night warmup.',
-    images: ['https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1200'],
+    images: [
+      'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1200',
+    ],
   },
   {
     churchId: '2',
     content: 'Community outreach — food drive and prayer.',
-    images: ['https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=1200'],
+    images: [
+      'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=1200',
+    ],
   },
   {
     churchId: '3',
     content: 'Community outreach — food drive and prayer.',
-    images: ['https://images.unsplash.com/photo-1542395975-1913c290082f?w=1200'],
+    images: [
+      'https://images.unsplash.com/photo-1542395975-1913c290082f?w=1200',
+    ],
   },
   {
     churchId: '5',
     content: 'Youth fellowship energy — faith and fun.',
-    images: ['https://images.unsplash.com/photo-1520975958221-7087e3edb3c2?w=1200'],
+    images: [
+      'https://images.unsplash.com/photo-1520975958221-7087e3edb3c2?w=1200',
+    ],
   },
   {
     churchId: '5',
     content: 'Upcoming service reminder — join us live.',
-    images: ['https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=1200'],
+    images: [
+      'https://images.unsplash.com/photo-1548625149-fc4a29cf7092?w=1200',
+    ],
   },
 ];
 
@@ -488,85 +781,101 @@ const communityPrograms = [
   {
     title: 'Community Food Bank',
     category: 'Outreach & Charity',
-    description: 'Providing food assistance to families in need every Wednesday and Saturday.',
+    description:
+      'Providing food assistance to families in need every Wednesday and Saturday.',
     image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800',
     contact: 'foodbank@community.org',
   },
   {
     title: 'Free Health Clinic',
     category: 'Health & Counseling',
-    description: 'Free medical screenings and health consultations every first Saturday.',
+    description:
+      'Free medical screenings and health consultations every first Saturday.',
     image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
     contact: 'health@community.org',
   },
   {
     title: 'Refugee Support Services',
     category: 'Outreach & Charity',
-    description: 'Supporting refugees and immigrants with resettlement, language classes, and job placement.',
+    description:
+      'Supporting refugees and immigrants with resettlement, language classes, and job placement.',
     image: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800',
     contact: 'refugee@community.org',
   },
   {
     title: 'Youth Mentorship Program',
     category: 'Community Programs',
-    description: 'Connecting young people with mentors for guidance and support.',
+    description:
+      'Connecting young people with mentors for guidance and support.',
     image: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=800',
     contact: 'youth@community.org',
   },
   {
     title: 'Counseling Services',
     category: 'Health & Counseling',
-    description: 'Free pastoral counseling and mental health support for individuals and families.',
+    description:
+      'Free pastoral counseling and mental health support for individuals and families.',
     image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800',
     contact: 'counseling@community.org',
   },
   {
     title: 'Volunteer Network',
     category: 'Volunteer Opportunities',
-    description: 'Join our community of volunteers serving in various ministries and programs.',
+    description:
+      'Join our community of volunteers serving in various ministries and programs.',
     image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
     contact: 'volunteer@community.org',
   },
   {
     title: 'Drop-in Center',
     category: 'Outreach & Charity',
-    description: 'A safe space offering hot meals, showers, and support services for the homeless.',
+    description:
+      'A safe space offering hot meals, showers, and support services for the homeless.',
     image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800',
     contact: 'dropin@community.org',
   },
   {
     title: 'Social Justice Initiatives',
     category: 'Charity & Justice',
-    description: 'Advocating for justice, equality, and human rights in our community.',
+    description:
+      'Advocating for justice, equality, and human rights in our community.',
     image: 'https://images.unsplash.com/photo-1528642474498-1af0c17fd8c3?w=800',
     contact: 'justice@community.org',
   },
   {
     title: 'Literacy Program',
     category: 'Education',
-    description: 'A community-focused literacy initiative aimed at improving reading and writing skills for children and adults through guided learning, tutoring, and faith-based education support.',
-    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200',
+    description:
+      'A community-focused literacy initiative aimed at improving reading and writing skills for children and adults through guided learning, tutoring, and faith-based education support.',
+    image:
+      'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200',
     contact: 'literacy@churchhub.org',
   },
   {
     title: 'After School Care',
     category: 'Youth & Family',
-    description: 'A safe and nurturing after-school environment for children, offering homework assistance, creative activities, mentorship, and spiritual growth programs.',
-    image: 'https://images.unsplash.com/photo-1522661067900-ab829854a57f?w=1200',
+    description:
+      'A safe and nurturing after-school environment for children, offering homework assistance, creative activities, mentorship, and spiritual growth programs.',
+    image:
+      'https://images.unsplash.com/photo-1522661067900-ab829854a57f?w=1200',
     contact: 'afterschool@churchhub.org',
   },
   {
     title: 'Senior Support',
     category: 'Community Care',
-    description: 'A compassionate support program for seniors, providing regular check-ins, companionship, transportation assistance, wellness activities, and access to community resources.',
-    image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1200',
+    description:
+      'A compassionate support program for seniors, providing regular check-ins, companionship, transportation assistance, wellness activities, and access to community resources.',
+    image:
+      'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1200',
     contact: 'seniors@churchhub.org',
   },
   {
     title: 'Job Training',
     category: 'Career Development',
-    description: 'A practical job training and skills development program designed to equip participants with employability skills, career guidance, resume support, and interview preparation.',
-    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200',
+    description:
+      'A practical job training and skills development program designed to equip participants with employability skills, career guidance, resume support, and interview preparation.',
+    image:
+      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200',
     contact: 'jobs@churchhub.org',
   },
 ];
@@ -575,7 +884,8 @@ const volunteerPrograms = [
   {
     title: 'Sunday School Teacher',
     church: 'Grace Community Church',
-    description: "Teach children ages 5-10 about God's love through engaging lessons and activities.",
+    description:
+      "Teach children ages 5-10 about God's love through engaging lessons and activities.",
     image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800',
     timeCommitment: 'Sundays 9:00-10:30 AM',
     skillsNeeded: ['Passion for children', 'Patience', 'Basic Bible knowledge'],
@@ -585,7 +895,8 @@ const volunteerPrograms = [
   {
     title: 'Worship Team Musician',
     church: 'Grace Community Church',
-    description: 'Join our worship band and use your musical gifts to lead the congregation in praise.',
+    description:
+      'Join our worship band and use your musical gifts to lead the congregation in praise.',
     image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800',
     timeCommitment: 'Sundays + Weekly practice',
     skillsNeeded: ['Musical ability', 'Team player', 'Heart for worship'],
@@ -606,18 +917,27 @@ const volunteerPrograms = [
     title: 'Worship Team',
     church: 'Grace Community Church',
     category: 'Worship & Arts',
-    description: 'Serve in leading the congregation into meaningful worship through music, vocals, and instrumental support. This team works closely with pastors and service leaders to create an atmosphere of praise and spiritual reflection.',
-    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200',
+    description:
+      'Serve in leading the congregation into meaningful worship through music, vocals, and instrumental support. This team works closely with pastors and service leaders to create an atmosphere of praise and spiritual reflection.',
+    image:
+      'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200',
     timeCommitment: 'Weekly rehearsals + Sunday services',
-    skillsNeeded: ['Singing', 'Instrumental skills', 'Team collaboration', 'Musical timing'],
+    skillsNeeded: [
+      'Singing',
+      'Instrumental skills',
+      'Team collaboration',
+      'Musical timing',
+    ],
     coordinator: 'Michael Johnson',
   },
   {
     title: "Children's Ministry",
     church: 'Grace Community Church',
     category: 'Children & Youth',
-    description: 'Support the spiritual and personal growth of children by assisting with lessons, activities, and care during services and events in a safe, nurturing environment.',
-    image: 'https://images.unsplash.com/photo-1503457574465-8f947a8faec8?w=1200',
+    description:
+      'Support the spiritual and personal growth of children by assisting with lessons, activities, and care during services and events in a safe, nurturing environment.',
+    image:
+      'https://images.unsplash.com/photo-1503457574465-8f947a8faec8?w=1200',
     timeCommitment: 'Bi-weekly or weekly during services',
     skillsNeeded: ['Patience', 'Teaching', 'Child care', 'Communication'],
     coordinator: 'Sarah Williams',
@@ -626,28 +946,44 @@ const volunteerPrograms = [
     title: 'Hospitality',
     church: 'Grace Community Church',
     category: 'Service & Care',
-    description: 'Create a welcoming experience for members and visitors by greeting guests, assisting with seating, providing information, and helping foster a warm church atmosphere.',
-    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200',
+    description:
+      'Create a welcoming experience for members and visitors by greeting guests, assisting with seating, providing information, and helping foster a warm church atmosphere.',
+    image:
+      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200',
     timeCommitment: 'Flexible — before and after services',
-    skillsNeeded: ['Friendliness', 'Organization', 'Customer service', 'Teamwork'],
+    skillsNeeded: [
+      'Friendliness',
+      'Organization',
+      'Customer service',
+      'Teamwork',
+    ],
     coordinator: 'Daniel Okoye',
   },
   {
     title: 'Media Team',
     church: 'Grace Community Church',
     category: 'Technology & Media',
-    description: 'Help manage audio, video, live streaming, photography, and visual presentations to support worship services and church events both in-person and online.',
-    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200',
+    description:
+      'Help manage audio, video, live streaming, photography, and visual presentations to support worship services and church events both in-person and online.',
+    image:
+      'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200',
     timeCommitment: 'Weekly services + occasional events',
-    skillsNeeded: ['Audio/Visual equipment', 'Live streaming', 'Photography', 'Basic editing'],
+    skillsNeeded: [
+      'Audio/Visual equipment',
+      'Live streaming',
+      'Photography',
+      'Basic editing',
+    ],
     coordinator: 'Joshua Lee',
   },
   {
     title: 'Outreach',
     church: 'Grace Community Church',
     category: 'Community Engagement',
-    description: 'Serve the wider community through outreach initiatives such as food drives, neighborhood support programs, evangelism events, and partnerships with local organizations.',
-    image: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1200',
+    description:
+      'Serve the wider community through outreach initiatives such as food drives, neighborhood support programs, evangelism events, and partnerships with local organizations.',
+    image:
+      'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1200',
     timeCommitment: 'Monthly events + planning sessions',
     skillsNeeded: ['Compassion', 'Event coordination', 'Public engagement'],
     coordinator: 'Rebecca Martinez',
@@ -656,10 +992,17 @@ const volunteerPrograms = [
     title: 'Prayer Ministry',
     church: 'Grace Community Church',
     category: 'Spiritual Care',
-    description: 'Provide prayer support to individuals and families through confidential prayer sessions, follow-ups, and intercessory prayer during services and throughout the week.',
-    image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=1200',
+    description:
+      'Provide prayer support to individuals and families through confidential prayer sessions, follow-ups, and intercessory prayer during services and throughout the week.',
+    image:
+      'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=1200',
     timeCommitment: 'Flexible — as needed or scheduled times',
-    skillsNeeded: ['Listening', 'Empathy', 'Spiritual discernment', 'Confidentiality'],
+    skillsNeeded: [
+      'Listening',
+      'Empathy',
+      'Spiritual discernment',
+      'Confidentiality',
+    ],
     coordinator: 'Pastor Emmanuel Adeyemi',
   },
 ];
@@ -681,11 +1024,20 @@ async function seed() {
     const SermonModel = app.get<Model<any>>(getModelToken('Sermon'));
     const GroupModel = app.get<Model<any>>(getModelToken('Group'));
     const JoinCodeModel = app.get<Model<any>>(getModelToken('JoinCode'));
-    const TenantSettingsModel = app.get<Model<any>>(getModelToken('TenantSettings'));
-    const CommunityProgramModel = app.get<Model<any>>(getModelToken('CommunityProgram'));
+    const TenantSettingsModel = app.get<Model<any>>(
+      getModelToken('TenantSettings'),
+    );
+    const CommunityProgramModel = app.get<Model<any>>(
+      getModelToken('CommunityProgram'),
+    );
+    const DenominationModel = app.get<Model<any>>(
+      getModelToken('Denomination'),
+    );
 
     // Check if seed data already exists
-    const existingAdmin = await UserModel.findOne({ email: 'superadmin@churchhub.com' });
+    const existingAdmin = await UserModel.findOne({
+      email: 'superadmin@churchhub.com',
+    });
     if (existingAdmin) {
       logger.warn('Seed data already exists. Clearing existing data...');
       // Clear existing data for fresh seed
@@ -701,6 +1053,7 @@ async function seed() {
         JoinCodeModel.deleteMany({}),
         TenantSettingsModel.deleteMany({}),
         CommunityProgramModel.deleteMany({}),
+        DenominationModel.deleteMany({}),
       ]);
       logger.log('Existing data cleared.');
     }
@@ -719,16 +1072,35 @@ async function seed() {
       emailVerified: true,
     });
 
+    // ========== CREATE DENOMINATIONS ==========
+    logger.log('Creating denominations...');
+    const denominationMap = new Map<string, any>(); // denominationName -> denomination doc
+
+    for (const denom of denominations) {
+      const created = await DenominationModel.create({
+        ...denom,
+        churchCount: 0,
+        isActive: true,
+      });
+      denominationMap.set(denom.name, created);
+      logger.log(`Created denomination: ${denom.name}`);
+    }
+
     // ========== CREATE TENANTS (CHURCHES) ==========
     logger.log('Creating tenants (churches)...');
     const tenantMap = new Map<string, any>(); // churchId -> tenant
     const pastorMap = new Map<string, any>(); // churchId -> pastor user
 
     for (const church of churches) {
+      // Get denomination reference
+      const denominationDoc = denominationMap.get(church.denomination);
+
       const tenant = await TenantModel.create({
         name: church.name,
         slug: church.slug,
         joinCode: church.joinCode,
+        denomination: church.denomination,
+        denominationId: denominationDoc?._id,
         description: church.description,
         logo: church.logo,
         coverImage: church.coverImage,
@@ -765,6 +1137,13 @@ async function seed() {
         },
         memberCount: church.membersCount,
       });
+
+      // Update denomination church count
+      if (denominationDoc) {
+        await DenominationModel.findByIdAndUpdate(denominationDoc._id, {
+          $inc: { churchCount: 1 },
+        });
+      }
 
       tenantMap.set(church.id, tenant);
 
@@ -988,21 +1367,24 @@ async function seed() {
       {
         churchId: '1',
         name: 'Young Adults Fellowship',
-        description: 'A community for young adults (18-35) to grow in faith together through fellowship, Bible study, and service.',
+        description:
+          'A community for young adults (18-35) to grow in faith together through fellowship, Bible study, and service.',
         meetingSchedule: 'Fridays at 7:00 PM',
         type: GroupType.SMALL_GROUP,
       },
       {
         churchId: '3',
         name: "Women's Prayer Circle",
-        description: 'Join us for weekly prayer, encouragement, and spiritual growth.',
+        description:
+          'Join us for weekly prayer, encouragement, and spiritual growth.',
         meetingSchedule: 'Tuesdays at 10:00 AM',
         type: GroupType.PRAYER_GROUP,
       },
       {
         churchId: '4',
         name: "Men's Breakfast Club",
-        description: 'Men gathering for fellowship, food, and faith-building discussions.',
+        description:
+          'Men gathering for fellowship, food, and faith-building discussions.',
         meetingSchedule: 'Saturdays at 8:00 AM',
         type: GroupType.SMALL_GROUP,
       },
@@ -1099,12 +1481,14 @@ async function seed() {
     const groupCount = await GroupModel.countDocuments();
     const membershipCount = await MembershipModel.countDocuments();
     const communityProgramCount = await CommunityProgramModel.countDocuments();
+    const denominationCount = await DenominationModel.countDocuments();
 
     logger.log('='.repeat(60));
     logger.log('COMPREHENSIVE SEED COMPLETED SUCCESSFULLY!');
     logger.log('='.repeat(60));
     logger.log('');
     logger.log('Created:');
+    logger.log(`  - ${denominationCount} Denominations`);
     logger.log(`  - ${tenantCount} Tenants (Churches)`);
     logger.log(`  - ${userCount} Users`);
     logger.log(`  - ${membershipCount} Memberships`);
@@ -1114,9 +1498,17 @@ async function seed() {
     logger.log(`  - ${groupCount} Groups`);
     logger.log(`  - ${communityProgramCount} Community Programs`);
     logger.log('');
+    logger.log('Denominations Created:');
+    for (const denom of denominations) {
+      const doc = await DenominationModel.findOne({ slug: denom.slug });
+      logger.log(`  - ${denom.name} (${doc?.churchCount || 0} churches)`);
+    }
+    logger.log('');
     logger.log('Churches Created:');
     for (const church of churches) {
-      logger.log(`  - ${church.name} (Join Code: ${church.joinCode})`);
+      logger.log(
+        `  - ${church.name} (${church.denomination}) - Join Code: ${church.joinCode}`,
+      );
     }
     logger.log('');
     logger.log('Test Credentials (all passwords: Password123!):');
@@ -1132,7 +1524,6 @@ async function seed() {
       logger.log(`    ${user.firstName} ${user.lastName}: ${user.email}`);
     }
     logger.log('='.repeat(60));
-
   } catch (error) {
     logger.error('Seed failed:', error);
     throw error;

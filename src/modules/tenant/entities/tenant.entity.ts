@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
 export type TenantDocument = Tenant & Document;
@@ -18,6 +18,30 @@ export enum SubscriptionPlan {
   ENTERPRISE = 'enterprise',
 }
 
+interface ServiceTimes {
+  day: string;
+  time: string;
+  type: string;
+  [key: string]: string | number;
+}
+
+@Schema({ _id: false })
+export class ServiceTime {
+  @ApiProperty()
+  @Prop({ required: true })
+  day: string;
+
+  @ApiProperty()
+  @Prop({ required: true })
+  time: string;
+
+  @ApiProperty()
+  @Prop({ required: true })
+  type: string;
+}
+
+export const ServiceTimeSchema = SchemaFactory.createForClass(ServiceTime);
+
 @Schema({ timestamps: true })
 export class Tenant {
   @ApiProperty()
@@ -27,6 +51,14 @@ export class Tenant {
   @ApiProperty()
   @Prop({ required: true, unique: true })
   slug: string;
+
+  @ApiProperty()
+  @Prop({ type: Types.ObjectId, ref: 'Denomination' })
+  denominationId: Types.ObjectId;
+
+  @ApiProperty()
+  @Prop()
+  denomination: string; // Store denomination name for quick access
 
   @ApiProperty()
   @Prop({ required: true, unique: true })
@@ -75,12 +107,20 @@ export class Tenant {
     youtube?: string;
   };
 
+  @ApiProperty({ type: [ServiceTime] })
+  @Prop({ type: [ServiceTimeSchema], default: [] })
+  serviceTimes: ServiceTime[];
+
   @ApiProperty()
   @Prop({ type: String, enum: TenantStatus, default: TenantStatus.ACTIVE })
   status: TenantStatus;
 
   @ApiProperty()
-  @Prop({ type: String, enum: SubscriptionPlan, default: SubscriptionPlan.FREE })
+  @Prop({
+    type: String,
+    enum: SubscriptionPlan,
+    default: SubscriptionPlan.FREE,
+  })
   subscriptionPlan: SubscriptionPlan;
 
   @ApiProperty()
@@ -131,3 +171,5 @@ export const TenantSchema = SchemaFactory.createForClass(Tenant);
 TenantSchema.index({ slug: 1 });
 TenantSchema.index({ joinCode: 1 });
 TenantSchema.index({ status: 1 });
+TenantSchema.index({ denominationId: 1 });
+TenantSchema.index({ denomination: 1 });

@@ -25,8 +25,9 @@ export abstract class BaseRepository<T extends Document> {
     skip: number,
     limit: number,
     sort: any = { createdAt: -1 },
+    select: any = null, 
   ): Promise<T[]> {
-    return this.model.find(filter).sort(sort).skip(skip).limit(limit).exec();
+    return this.model.find(filter, select).sort(sort).skip(skip).limit(limit).exec();
   }
 
   async count(filter: FilterQuery<T> = {}): Promise<number> {

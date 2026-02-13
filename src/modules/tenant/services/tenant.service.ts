@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TenantRepository } from '../repositories/tenant.repository';
 import { CreateTenantDto, UpdateTenantDto } from '../dtos';
 import { SlugUtil, CodeGeneratorUtil } from '@common/utils';
@@ -69,7 +74,10 @@ export class TenantService {
     return tenant;
   }
 
-  async findAll(page: number = 1, limit: number = 10): Promise<{ data: TenantDocument[]; total: number }> {
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ data: TenantDocument[]; total: number }> {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([
       this.tenantRepository.findWithPagination({}, skip, limit),
@@ -79,20 +87,45 @@ export class TenantService {
     return { data, total };
   }
 
-  async findPublicChurches(page: number = 1, limit: number = 20): Promise<{
+  async findPublicChurches(
+    page: number = 1,
+    limit: number = 20,
+    search?: string,
+  ): Promise<{
     data: TenantDocument[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
     const skip = (page - 1) * limit;
-    const filter = {
+    const filter: any = {
       status: { $in: [TenantStatus.ACTIVE, TenantStatus.TRIAL] },
       'settings.allowPublicRegistration': true,
     };
 
+    // Add search filter if provided
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { 'address.city': searchRegex },
+        { 'address.state': searchRegex },
+      ];
+    }
+    const select = {
+      name: 1,
+      denomination: 1,
+      coverImage: 1,
+      address: 1,
+      phone: 1,
+      'settings.enableSermons': 1,
+      serviceTimes: 1,
+    };
+
     const [data, total] = await Promise.all([
-      this.tenantRepository.findWithPagination(filter, skip, limit),
+      this.tenantRepository.findWithPagination(filter, skip, limit,  { createdAt: -1 }, select),
       this.tenantRepository.count(filter),
     ]);
+
 
     return {
       data,
@@ -138,14 +171,20 @@ export class TenantService {
       throw new NotFoundException('Invalid join code');
     }
 
-    if (tenant.status !== TenantStatus.ACTIVE && tenant.status !== TenantStatus.TRIAL) {
+    if (
+      tenant.status !== TenantStatus.ACTIVE &&
+      tenant.status !== TenantStatus.TRIAL
+    ) {
       throw new BadRequestException('This church is not accepting new members');
     }
 
     return tenant;
   }
 
-  async update(id: string, updateTenantDto: UpdateTenantDto): Promise<TenantDocument> {
+  async update(
+    id: string,
+    updateTenantDto: UpdateTenantDto,
+  ): Promise<TenantDocument> {
     const tenant = await this.findById(id);
 
     // If name is being updated, generate new slug
@@ -160,7 +199,10 @@ export class TenantService {
       (updateTenantDto as any).slug = newSlug;
     }
 
-    const updated = await this.tenantRepository.update(id, updateTenantDto as any);
+    const updated = await this.tenantRepository.update(
+      id,
+      updateTenantDto as any,
+    );
 
     // Invalidate cache
     await this.invalidateTenantCache(id);
